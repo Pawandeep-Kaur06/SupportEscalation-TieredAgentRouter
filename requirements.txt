@@ -1,0 +1,41 @@
+# LLM
+google-generativeai
+
+# Agent Framework
+langchain
+langchain-community
+langgraph
+
+# RAG
+sentence-transformers
+faiss-cpu
+
+# Frontend
+streamlit
+
+# Data handling
+pandas
+numpy
+
+# ML utilities
+scikit-learn
+
+# Database
+sqlalchemy
+
+# Environment variables
+python-dotenv
+
+# File processing
+pypdf
+python-docx
+
+# Web/data collection
+requests
+beautifulsoup4
+
+# Visualization
+plotly
+
+# Optional tokenizer support
+tiktoken
