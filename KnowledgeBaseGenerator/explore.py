@@ -1,19 +1,11 @@
 import pandas as pd
 
-# Load dataset
+# Load original dataset
 df = pd.read_csv("customer_support_tickets.csv")
 
-# Dataset overview
-print("Columns:")
-print(df.columns)
-
-print("\nQueue distribution:")
-print(df["queue"].value_counts())
-
-print("\nLanguage distribution:")
-print(df["language"].value_counts())
-
-# IT-related queues
+# -----------------------------
+# Keep only IT-related queues
+# -----------------------------
 IT_QUEUES = [
     "Technical Support",
     "IT Support",
@@ -21,42 +13,158 @@ IT_QUEUES = [
     "Service Outages and Maintenance"
 ]
 
-# Filter IT tickets
-it_df = df[df["queue"].isin(IT_QUEUES)]
+df = df[df["queue"].isin(IT_QUEUES)]
 
-print("\nAfter queue filtering:")
-print(it_df.shape)
+# -----------------------------
+# English only
+# -----------------------------
+df = df[df["language"] == "en"]
 
-# Remove rows with missing data
-it_df = it_df.dropna(
+# -----------------------------
+# Remove incomplete rows
+# -----------------------------
+df = df.dropna(
     subset=["subject", "body", "answer"]
 )
 
-# Keep only English tickets
-it_df = it_df[
-    it_df["language"] == "en"
+# -----------------------------
+# IT keywords
+# -----------------------------
+GOOD_KEYWORDS = [
+
+    # Authentication
+    "password",
+    "login",
+    "authentication",
+    "mfa",
+    "account",
+    "credential",
+
+    # Network
+    "vpn",
+    "network",
+    "wifi",
+    "dns",
+    "firewall",
+    "proxy",
+
+    # Email
+    "email",
+    "outlook",
+    "mail",
+
+    # Software
+    "software",
+    "application",
+    "install",
+    "installation",
+    "update",
+    "crash",
+    "bug",
+    "error",
+
+    # Systems
+    "server",
+    "database",
+    "windows",
+    "linux",
+
+    # Cloud
+    "azure",
+    "aws",
+    "docker",
+    "kubernetes",
+
+    # Hardware
+    "printer",
+    "laptop",
+    "keyboard",
+    "monitor",
+
+    # Security
+    "phishing",
+    "malware",
+    "security",
+
+    # General
+    "support",
+    "access",
+    "permission"
 ]
 
-print("\nAfter cleaning:")
-print(it_df.shape)
+# -----------------------------
+# Non-IT keywords
+# -----------------------------
+BAD_KEYWORDS = [
 
-# Priority distribution
-print("\nPriority distribution:")
-print(it_df["priority"].value_counts())
+    "marketing",
+    "campaign",
+    "seo",
+    "customer satisfaction",
+    "patient",
+    "hospital",
+    "medical",
+    "doctor",
+    "pharmacy",
+    "investment",
+    "trading",
+    "stock",
+    "portfolio",
+    "bank",
+    "loan",
+    "insurance",
+    "retail",
+    "sales",
+    "return",
+    "refund",
+    "shipping",
+    "delivery",
+    "crm",
+    "advertisement"
+]
 
-# Randomly select 500 tickets
-it_df = it_df.sample(
-    n=500,
-    random_state=42
-)
+# -----------------------------
+# Combine subject + body
+# -----------------------------
+df["combined"] = (
+    df["subject"].fillna("") +
+    " " +
+    df["body"].fillna("")
+).str.lower()
 
-print("\nFinal dataset size:")
-print(it_df.shape)
+# Keep rows with GOOD keywords
+good_pattern = "|".join(GOOD_KEYWORDS)
 
-# Save filtered dataset
-it_df.to_csv(
+filtered = df[
+    df["combined"].str.contains(
+        good_pattern,
+        case=False,
+        regex=True
+    )
+]
+
+# Remove BAD keywords
+bad_pattern = "|".join(BAD_KEYWORDS)
+
+filtered = filtered[
+    ~filtered["combined"].str.contains(
+        bad_pattern,
+        case=False,
+        regex=True
+    )
+]
+
+# Remove helper column
+filtered = filtered.drop(columns=["combined"])
+
+print("Final Dataset Size:", filtered.shape)
+
+print("\nQueue Distribution:\n")
+print(filtered["queue"].value_counts())
+
+filtered.to_csv(
     "it_support_dataset.csv",
     index=False
 )
 
-print("\nSaved as: it_support_dataset.csv")
+print("\nSaved it_support_dataset.csv")
