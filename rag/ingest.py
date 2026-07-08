@@ -39,15 +39,21 @@ print(embeddings.shape)
 import faiss
 import numpy as np
 
+# Convert to float32
+embeddings = np.array(embeddings).astype("float32")
+
+# Normalize for cosine similarity
+faiss.normalize_L2(embeddings)
+
 dimension = embeddings.shape[1]
 
-index = faiss.IndexFlatL2(dimension)
+# Create a NEW index
+index = faiss.IndexFlatIP(dimension)
 
-index.add(
-    np.array(embeddings).astype("float32")
-)
+# Add embeddings ONLY ONCE
+index.add(embeddings)
 
-print(index.ntotal)
+print("Vectors stored:", index.ntotal)
 
 import pickle
 BASE_DIR = Path(__file__).resolve().parent
