@@ -26,45 +26,40 @@ with open(INDEX_DIR / "metadata.pkl", "rb") as f:
 # Load embedding model
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-query = input("Ask something: ")
 
-query_embedding = model.encode([query])
+def retrieve_documents(query, k=5):
 
-query_embedding = np.array(query_embedding).astype("float32")
+    query_embedding = model.encode([query])
+    query_embedding = np.array(query_embedding).astype("float32")
 
-# Normalize BEFORE searching
-faiss.normalize_L2(query_embedding)
+    faiss.normalize_L2(query_embedding)
 
-k = 3
+    scores, indices = index.search(query_embedding, k)
 
-distances, indices = index.search(
-    query_embedding,
-    k
-)
-faiss.normalize_L2(query_embedding)
-print("\nTop Results:\n")
+    docs = []
 
-for i in indices[0]:
+    for idx, score in zip(indices[0], scores[0]):
+        if score >= 0.20:
+            docs.append(metadata[idx])
 
-    print("=" * 60)
+    print("\nRetrieved Documents:\n")
 
-    print(metadata[i]["file"])
+    for rank, (idx, score) in enumerate(zip(indices[0], scores[0]), start=1):
 
-    print()
+        docs.append(metadata[idx])
 
-    print(metadata[i]["text"][:500])
+        print(f"{rank}. {metadata[idx]['file']}")
+        print(f"Similarity: {score:.3f}")
 
-    print()
-for rank, (idx, dist) in enumerate(
-    zip(indices[0], distances[0]),
-    start=1
-):
-    scores = distances[0]
+    return docs, scores[0]
+
+
+if __name__ == "__main__":
+
+    query = input("Ask something: ")
+
+    docs, scores = retrieve_documents(query)
 
     confidence = calculate_confidence(scores)
 
-    print(f"\nResult {rank}")
-    print(f"Similarity: {dist:.4f}")
-    print(metadata[idx]["file"])
-    print(metadata[idx]["text"][:400])
     print(f"\nConfidence: {confidence:.2f}")
