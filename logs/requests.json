@@ -1,0 +1,19 @@
+[
+    {
+        "timestamp": "2026-07-10T17:17:11.229645+00:00",
+        "query": "Docker daemon won't start on my laptop after restart. Docker Desktop opens, but containers will not start.",
+        "retrieval_confidence": 0.75,
+        "tier_used": "Tier2",
+        "specialist": "Software",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier2",
+        "escalated": true,
+        "route": [
+            "Router",
+            "Tier1",
+            "Tier2"
+        ]
+    }
+]

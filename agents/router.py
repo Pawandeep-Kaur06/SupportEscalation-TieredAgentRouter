@@ -1,17 +1,17 @@
 from rag.retrieve import retrieve_documents
 from utils.confidence import calculate_confidence
+from utils.classifier import classify_category
+from config import ROUTER_THRESHOLD
 
 
-THRESHOLD = 0.60
+def route_query(query, documents=None, scores=None):
 
-
-def route_query(query):
-
-    docs, scores = retrieve_documents(query)
+    if documents is None or scores is None:
+        documents, scores = retrieve_documents(query)
 
     confidence = calculate_confidence(scores)
 
-    if confidence >= THRESHOLD:
+    if confidence >= ROUTER_THRESHOLD:
 
         tier = "Tier1"
 
@@ -25,21 +25,11 @@ def route_query(query):
 
         "confidence": confidence,
 
-        "documents": docs,
+        "category": classify_category(query, documents),
+
+        "documents": documents,
 
         "scores": scores
 
     }
 
-
-if __name__ == "__main__":
-
-    query = input("Ask something: ")
-
-    result = route_query(query)
-
-    print("\nRouting Decision")
-
-    print(result["tier"])
-
-    print(result["confidence"])
