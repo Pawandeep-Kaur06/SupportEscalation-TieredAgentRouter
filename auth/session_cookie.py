@@ -7,9 +7,15 @@ may not be available yet (the component hasn't reported back), so callers
 should treat a None result as "unknown, try again next rerun" rather than
 "definitely logged out". This is a known limitation of browser-cookie
 components in Streamlit, not a bug in this file.
-"""
 
-import streamlit as st
+Important: CookieController is a Streamlit *custom component*. Components
+create a widget-like element that must be (re)declared on every script run
+to stay in sync with the browser — wrapping its construction in
+@st.cache_resource (an earlier version of this file did) makes Streamlit
+skip that declaration on cache hits, which triggers a CachedWidgetWarning
+and leaves the cookie state stale. So this is deliberately NOT cached;
+constructing it is cheap.
+"""
 
 try:
     from streamlit_cookies_controller import CookieController
@@ -20,7 +26,6 @@ except ImportError:
 COOKIE_NAME = "se_auth_session"
 
 
-@st.cache_resource
 def _controller():
     return CookieController()
 

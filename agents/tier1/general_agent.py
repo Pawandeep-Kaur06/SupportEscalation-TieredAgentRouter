@@ -285,9 +285,10 @@ Decision Policy:
 5. Prefer Resolved over Needs More Information whenever the KB contains applicable troubleshooting.
 
 6. The Answer should always contain:
-   • Immediate troubleshooting steps
+   • Immediate troubleshooting steps formatted as a clean bulleted list (using `-` or `*`), NOT a single dense paragraph or a numbered inline list.
    • Expected outcome
    • Only then request any optional additional information
+
 
 IMPORTANT:
 

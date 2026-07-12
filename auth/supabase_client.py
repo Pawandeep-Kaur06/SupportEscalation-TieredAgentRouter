@@ -6,14 +6,12 @@ instead of constructing its own client, so there is exactly one client
 per Streamlit process.
 """
 
-from supabase import Client, create_client
-
 from config import SUPABASE_CONFIGURED, SUPABASE_KEY, SUPABASE_URL
 
-_client: Client | None = None
+_client = None
 
 
-def get_client() -> Client:
+def get_client():
     global _client
 
     if not SUPABASE_CONFIGURED:
@@ -23,6 +21,14 @@ def get_client() -> Client:
         )
 
     if _client is None:
+        try:
+            from supabase import create_client
+        except ImportError as error:
+            raise RuntimeError(
+                "Supabase Python package is not installed. Run "
+                "`pip install -r requirements.txt` in the project environment."
+            ) from error
+
         _client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
     return _client

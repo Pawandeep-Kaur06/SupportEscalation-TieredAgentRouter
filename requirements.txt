@@ -20,8 +20,12 @@ numpy
 # ML utilities
 scikit-learn
 
-# Database
-sqlalchemy
+# Database / Auth (Supabase)
+supabase
+streamlit-cookies-controller
+
+# PDF export
+reportlab
 
 # Environment variables
 python-dotenv

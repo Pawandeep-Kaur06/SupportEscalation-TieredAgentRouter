@@ -15,5 +15,375 @@
             "Tier1",
             "Tier2"
         ]
+    },
+    {
+        "timestamp": "2026-07-10T20:14:46.575797+00:00",
+        "query": "cannot open folders",
+        "retrieval_confidence": 0.4,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Needs More Information",
+        "resolved": false,
+        "resolved_by": null,
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-10T20:15:28.091462+00:00",
+        "query": "cannot reset my password",
+        "retrieval_confidence": 0.4,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Authentication",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-10T20:15:53.044837+00:00",
+        "query": "still cannot ",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T11:08:43.009000+00:00",
+        "query": "why won't my docker work",
+        "retrieval_confidence": 0.75,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T11:09:11.299740+00:00",
+        "query": "why won't my docker work?",
+        "retrieval_confidence": 0.75,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T11:09:57.386667+00:00",
+        "query": "i't difficult navigating",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "General",
+        "status": "Needs More Information",
+        "resolved": false,
+        "resolved_by": null,
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T11:10:27.283165+00:00",
+        "query": "huh?",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "General",
+        "status": "Needs More Information",
+        "resolved": false,
+        "resolved_by": null,
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T11:17:23.333177+00:00",
+        "query": "hi",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "General",
+        "status": "Needs More Information",
+        "resolved": false,
+        "resolved_by": null,
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T12:29:16.123089+00:00",
+        "query": "hi",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "General",
+        "status": "Needs More Information",
+        "resolved": false,
+        "resolved_by": null,
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T12:29:26.262889+00:00",
+        "query": "oh",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "General",
+        "status": "Needs More Information",
+        "resolved": false,
+        "resolved_by": null,
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:38:50.512271+00:00",
+        "query": "My laptop screen is completely black and won't turn on.",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Hardware",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:38:52.848274+00:00",
+        "query": "The software program is throwing a memory allocation error.",
+        "retrieval_confidence": 0.75,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:38:54.913106+00:00",
+        "query": "I need help resetting my domain password.",
+        "retrieval_confidence": 0.4,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Authentication",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:40:58.045765+00:00",
+        "query": "how to reset my password?",
+        "retrieval_confidence": 0.4,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Authentication",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:41:19.543168+00:00",
+        "query": "still can't reset it?",
+        "retrieval_confidence": 0.4,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Authentication",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:45:10.888989+00:00",
+        "query": "My laptop screen is completely black and won't turn on.",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Hardware",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:45:13.432761+00:00",
+        "query": "The software program is throwing a memory allocation error.",
+        "retrieval_confidence": 0.75,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:45:15.618867+00:00",
+        "query": "I need help resetting my domain password.",
+        "retrieval_confidence": 0.4,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Authentication",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T13:48:49.790074+00:00",
+        "query": "how to reset?",
+        "retrieval_confidence": 0.4,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T14:20:01.372724+00:00",
+        "query": "Java application throws OutOfMemoryError.",
+        "retrieval_confidence": 0.6,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T14:31:47.536006+00:00",
+        "query": "RAID controller reports degraded array.",
+        "retrieval_confidence": 0.2,
+        "tier_used": "Tier2",
+        "specialist": "Hardware",
+        "category": "Hardware",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier2",
+        "escalated": true,
+        "route": [
+            "Router",
+            "Tier1",
+            "Tier2"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T15:22:11.548418+00:00",
+        "query": "my docker won't start",
+        "retrieval_confidence": 0.75,
+        "tier_used": "Tier2",
+        "specialist": "Software",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier2",
+        "escalated": true,
+        "route": [
+            "Router",
+            "Tier1",
+            "Tier2"
+        ]
+    },
+    {
+        "timestamp": "2026-07-12T17:22:59.871740+00:00",
+        "query": "how to install python",
+        "retrieval_confidence": 0.6,
+        "tier_used": "Tier1",
+        "specialist": "",
+        "category": "Software",
+        "status": "Resolved",
+        "resolved": true,
+        "resolved_by": "Tier1",
+        "escalated": false,
+        "route": [
+            "Router",
+            "Tier1"
+        ]
     }
 ]

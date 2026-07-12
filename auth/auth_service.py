@@ -1,16 +1,29 @@
-"""Authentication service with Supabase support and a local SQLite fallback."""
+"""
+Auth service built on Supabase Auth.
+
+Design notes:
+- We never touch password hashes ourselves; Supabase Auth owns that.
+- After sign_in / sign_up, the Supabase client keeps the user's session
+  internally, so subsequent PostgREST calls made through the same
+  client are automatically scoped by RLS as that user.
+- Streamlit reruns the whole script on every interaction, so we persist
+  the minimum needed (user id, email, role, access/refresh tokens) in
+  st.session_state and re-hydrate the Supabase client's session from it
+  on each rerun.
+"""
 
 from dataclasses import dataclass
-import hashlib
-import secrets
-import sqlite3
-from pathlib import Path
 
 import streamlit as st
 
 from auth import session_cookie
 from auth.supabase_client import get_client
-from config import ROOT_DIR, SUPABASE_CONFIGURED
+from config import AUTH_CALLBACK_URL
+
+AUTH_UNAVAILABLE_MESSAGE = (
+    "Authentication is not configured. Set SUPABASE_URL and SUPABASE_KEY, "
+    "then restart the Streamlit app."
+)
 
 SESSION_KEYS = (
     "auth_user_id",
@@ -20,47 +33,11 @@ SESSION_KEYS = (
     "auth_refresh_token",
 )
 
-LOCAL_DB = ROOT_DIR / "database" / "local_app.db"
-
 
 @dataclass
 class AuthResult:
     success: bool
     message: str = ""
-
-
-def _connect():
-    LOCAL_DB.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(LOCAL_DB)
-    conn.row_factory = sqlite3.Row
-    conn.execute(
-        """
-        CREATE TABLE IF NOT EXISTS local_users (
-            id TEXT PRIMARY KEY,
-            email TEXT UNIQUE NOT NULL,
-            full_name TEXT,
-            password_hash TEXT NOT NULL,
-            role TEXT NOT NULL DEFAULT 'user',
-            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )
-        """
-    )
-    conn.commit()
-    return conn
-
-
-def _hash_password(password: str, salt: str | None = None) -> str:
-    salt = salt or secrets.token_hex(16)
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 120000)
-    return f"{salt}${digest.hex()}"
-
-
-def _verify_password(password: str, stored_hash: str) -> bool:
-    try:
-        salt, digest = stored_hash.split("$", 1)
-    except ValueError:
-        return False
-    return secrets.compare_digest(_hash_password(password, salt), f"{salt}${digest}")
 
 
 def _store_session(user_id, email, role, access_token, refresh_token):
@@ -77,22 +54,42 @@ def _clear_session():
 
 
 def _fetch_role(client, user_id: str) -> str:
-    resp = (
-        client.table("profiles")
-        .select("role")
-        .eq("id", user_id)
-        .single()
-        .execute()
-    )
+    try:
+        resp = (
+            client.table("profiles")
+            .select("role")
+            .eq("id", user_id)
+            .maybe_single()
+            .execute()
+        )
+    except Exception:
+        return "user"
+
     if resp.data:
-        return resp.data.get("role", "user")
+        return resp.data.get("role") or "user"
     return "user"
 
 
-def _local_role_for_new_user() -> str:
-    with _connect() as conn:
-        count = conn.execute("SELECT COUNT(*) FROM local_users").fetchone()[0]
-    return "admin" if count == 0 else "user"
+def _store_auth_response(response) -> bool:
+    if response is None or response.user is None or response.session is None:
+        return False
+
+    role = _fetch_role(get_client(), response.user.id)
+    _store_session(
+        response.user.id,
+        response.user.email,
+        role,
+        response.session.access_token,
+        response.session.refresh_token,
+    )
+    session_cookie.save(
+        response.user.id,
+        response.user.email,
+        role,
+        response.session.access_token,
+        response.session.refresh_token,
+    )
+    return True
 
 
 def sign_up(email: str, password: str, full_name: str = "") -> AuthResult:
@@ -101,43 +98,37 @@ def sign_up(email: str, password: str, full_name: str = "") -> AuthResult:
     if len(password) < 8:
         return AuthResult(False, "Password must be at least 8 characters.")
 
-    if not SUPABASE_CONFIGURED:
-        user_id = secrets.token_hex(16)
-        role = _local_role_for_new_user()
-        try:
-            with _connect() as conn:
-                conn.execute(
-                    """
-                    INSERT INTO local_users (id, email, full_name, password_hash, role)
-                    VALUES (?, ?, ?, ?, ?)
-                    """,
-                    (user_id, email, full_name, _hash_password(password), role),
-                )
-        except sqlite3.IntegrityError:
-            return AuthResult(False, "An account with this email already exists.")
-
-        token = f"local-{secrets.token_hex(24)}"
-        _store_session(user_id, email, role, token, token)
-        session_cookie.save(user_id, email, role, token, token)
-        return AuthResult(True, "Local account created and signed in.")
-
-    client = get_client()
     try:
+        client = get_client()
         response = client.auth.sign_up(
             {
                 "email": email,
                 "password": password,
-                "options": {"data": {"full_name": full_name}},
+                "options": {
+                    "data": {"full_name": full_name},
+                    "email_redirect_to": AUTH_CALLBACK_URL,
+                },
             }
         )
     except Exception as error:
+        message = str(error)
+        if "rate limit" in message.lower() or "security purposes" in message.lower():
+            return AuthResult(
+                False,
+                "Signup email limit reached. Wait a few minutes, then try again, "
+                "or use the verification email that was already sent.",
+            )
         return AuthResult(False, f"Sign up failed: {error}")
 
     if response.user is None:
         return AuthResult(False, "Sign up failed. Please try again.")
 
     if response.session is None:
-        return AuthResult(True, "Account created. Check your email to confirm before signing in.")
+        # Email confirmation is enabled on this Supabase project.
+        return AuthResult(
+            True,
+            "Account created. Check your email to confirm before signing in.",
+        )
 
     _store_session(
         response.user.id,
@@ -147,11 +138,8 @@ def sign_up(email: str, password: str, full_name: str = "") -> AuthResult:
         response.session.refresh_token,
     )
     session_cookie.save(
-        response.user.id,
-        response.user.email,
-        "user",
-        response.session.access_token,
-        response.session.refresh_token,
+        response.user.id, response.user.email, "user",
+        response.session.access_token, response.session.refresh_token,
     )
     return AuthResult(True, "Account created and signed in.")
 
@@ -160,24 +148,13 @@ def sign_in(email: str, password: str) -> AuthResult:
     if not email or not password:
         return AuthResult(False, "Email and password are required.")
 
-    if not SUPABASE_CONFIGURED:
-        with _connect() as conn:
-            user = conn.execute(
-                "SELECT * FROM local_users WHERE lower(email) = lower(?)",
-                (email,),
-            ).fetchone()
-
-        if not user or not _verify_password(password, user["password_hash"]):
-            return AuthResult(False, "Invalid email or password.")
-
-        token = f"local-{secrets.token_hex(24)}"
-        _store_session(user["id"], user["email"], user["role"], token, token)
-        session_cookie.save(user["id"], user["email"], user["role"], token, token)
-        return AuthResult(True, "Signed in.")
-
-    client = get_client()
     try:
-        response = client.auth.sign_in_with_password({"email": email, "password": password})
+        client = get_client()
+        response = client.auth.sign_in_with_password(
+            {"email": email, "password": password}
+        )
+    except RuntimeError as error:
+        return AuthResult(False, str(error) or AUTH_UNAVAILABLE_MESSAGE)
     except Exception:
         return AuthResult(False, "Invalid email or password.")
 
@@ -185,6 +162,7 @@ def sign_in(email: str, password: str) -> AuthResult:
         return AuthResult(False, "Invalid email or password.")
 
     role = _fetch_role(client, response.user.id)
+
     _store_session(
         response.user.id,
         response.user.email,
@@ -193,40 +171,48 @@ def sign_in(email: str, password: str) -> AuthResult:
         response.session.refresh_token,
     )
     session_cookie.save(
-        response.user.id,
-        response.user.email,
-        role,
-        response.session.access_token,
-        response.session.refresh_token,
+        response.user.id, response.user.email, role,
+        response.session.access_token, response.session.refresh_token,
     )
     return AuthResult(True, "Signed in.")
 
 
 def sign_out() -> None:
-    if SUPABASE_CONFIGURED:
-        try:
-            get_client().auth.sign_out()
-        except Exception:
-            pass
+    try:
+        get_client().auth.sign_out()
+    except Exception:
+        pass
     _clear_session()
     session_cookie.clear()
 
 
 def bootstrap_session() -> None:
+    """
+    Call once near the top of app.py, before any page routing decisions.
+    If st.session_state already has a session, this is a no-op. Otherwise
+    it tries to restore one from the "remember me" cookie.
+    """
     if is_authenticated():
         return
 
     remembered = session_cookie.load()
     if not remembered:
         return
+    if not isinstance(remembered, dict):
+        session_cookie.clear()
+        return
+    if not remembered.get("access_token") or not remembered.get("refresh_token"):
+        session_cookie.clear()
+        return
 
-    if SUPABASE_CONFIGURED:
+    try:
         client = get_client()
-        try:
-            client.auth.set_session(remembered["access_token"], remembered["refresh_token"])
-        except Exception:
-            session_cookie.clear()
-            return
+        client.auth.set_session(
+            remembered["access_token"], remembered["refresh_token"]
+        )
+    except Exception:
+        session_cookie.clear()
+        return
 
     _store_session(
         remembered["user_id"],
@@ -241,41 +227,78 @@ def request_password_reset(email: str, redirect_to: str | None = None) -> AuthRe
     if not email:
         return AuthResult(False, "Enter your email first.")
 
-    if not SUPABASE_CONFIGURED:
-        return AuthResult(
-            False,
-            "Password reset email is unavailable in local mode. Create a new local account or configure Supabase.",
-        )
-
-    client = get_client()
     try:
-        options = {"redirect_to": redirect_to} if redirect_to else None
-        if options:
-            client.auth.reset_password_email(email, options)
-        else:
-            client.auth.reset_password_email(email)
+        client = get_client()
+        client.auth.reset_password_email(
+            email,
+            {"redirect_to": redirect_to or AUTH_CALLBACK_URL},
+        )
     except Exception as error:
         return AuthResult(False, f"Could not send reset email: {error}")
 
     return AuthResult(True, "Password reset email sent if the account exists.")
 
 
+def complete_auth_callback(params: dict) -> AuthResult:
+    error = params.get("error_description") or params.get("error")
+    if error:
+        return AuthResult(False, str(error).replace("+", " "))
+
+    try:
+        client = get_client()
+    except Exception as exc:
+        return AuthResult(False, str(exc) or AUTH_UNAVAILABLE_MESSAGE)
+    code = params.get("code")
+    if code:
+        try:
+            response = client.auth.exchange_code_for_session({"auth_code": code})
+        except Exception as exc:
+            return AuthResult(False, f"Could not complete email confirmation: {exc}")
+
+        if _store_auth_response(response):
+            return AuthResult(True, "Email confirmed. You are signed in.")
+        return AuthResult(True, "Email confirmed. Please sign in.")
+
+    token_hash = params.get("token_hash")
+    if token_hash:
+        verification_type = params.get("type") or "signup"
+        try:
+            response = client.auth.verify_otp(
+                {"token_hash": token_hash, "type": verification_type}
+            )
+        except Exception as exc:
+            return AuthResult(False, f"Could not verify email link: {exc}")
+
+        if _store_auth_response(response):
+            return AuthResult(True, "Email confirmed. You are signed in.")
+        return AuthResult(True, "Email confirmed. Please sign in.")
+
+    return AuthResult(
+        True,
+        "Email confirmed. You can sign in now.",
+    )
+
+
 def restore_session() -> bool:
+    """
+    Re-hydrate the Supabase client's auth session from Streamlit's
+    session_state on a rerun. Returns True if a session was restored.
+    """
     access_token = st.session_state.get("auth_access_token")
     refresh_token = st.session_state.get("auth_refresh_token")
 
     if not access_token or not refresh_token:
         return False
 
-    if not SUPABASE_CONFIGURED:
-        return True
-
-    client = get_client()
     try:
-        client.auth.set_session(access_token, refresh_token)
+        response = get_client().auth.set_session(access_token, refresh_token)
     except Exception:
         _clear_session()
         return False
+
+    if response.session:
+        st.session_state["auth_access_token"] = response.session.access_token
+        st.session_state["auth_refresh_token"] = response.session.refresh_token
 
     return True
 
@@ -297,6 +320,7 @@ def current_user() -> dict:
 
 
 def require_auth() -> None:
+    """Call at the top of any protected page. Stops the page if unauth'd."""
     if not is_authenticated() or not restore_session():
         st.warning("Please sign in to continue.")
         st.page_link("pages/1_Login.py", label="Go to Login")

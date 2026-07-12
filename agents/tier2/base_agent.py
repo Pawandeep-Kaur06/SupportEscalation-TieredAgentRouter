@@ -187,6 +187,8 @@ Escalated
 
 Rules:
 
+- Always format the troubleshooting steps in the answer as a clean bulleted list (using `-` or `*`), NOT a single dense paragraph or a numbered inline list.
+
 - Use "Resolved" if you provided concrete specialist troubleshooting steps or a clear next action
   the user can perform now.
 
@@ -203,6 +205,7 @@ Rules:
 
 - For infrastructure issues such as directory replication, server outages, routing failures,
   or administrative failures, include focused diagnostics that match the issue.
+
 """
 
     try:
