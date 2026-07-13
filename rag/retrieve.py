@@ -2,6 +2,7 @@ import pickle
 import faiss
 from pathlib import Path
 import numpy as np
+import streamlit as st
 
 from sentence_transformers import SentenceTransformer
 
@@ -11,27 +12,19 @@ BASE_DIR = Path(__file__).resolve().parent
 
 INDEX_DIR = BASE_DIR / "index"
 
-index = None
-metadata = None
-model = None
 
-
+@st.cache_resource
 def _load_retriever():
-    global index, metadata, model
+    loaded_index = faiss.read_index(
+        str(INDEX_DIR / "faiss_index.bin")
+    )
 
-    if index is None:
-        index = faiss.read_index(
-            str(INDEX_DIR / "faiss_index.bin")
-        )
+    with open(INDEX_DIR / "metadata.pkl", "rb") as f:
+        loaded_metadata = pickle.load(f)
 
-    if metadata is None:
-        with open(INDEX_DIR / "metadata.pkl", "rb") as f:
-            metadata = pickle.load(f)
+    loaded_model = SentenceTransformer(EMBEDDING_MODEL)
 
-    if model is None:
-        model = SentenceTransformer(EMBEDDING_MODEL)
-
-    return index, metadata, model
+    return loaded_index, loaded_metadata, loaded_model
 
 
 def retrieve_documents(query, k=TOP_K):
