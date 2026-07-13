@@ -362,8 +362,11 @@ div[data-testid="stPopoverBody"] label {
     box-shadow: 0 0 0 1px var(--accent) !important;
 }
 
-/* Make the bottom chat input bar container completely transparent in dark mode */
-div[data-testid="stBottom"],
+/* Make the bottom chat input bar container have a faded background to prevent text passing under it transparently */
+div[data-testid="stBottom"] {
+    background: linear-gradient(180deg, transparent 0%, var(--bg-primary) 30%, var(--bg-primary) 100%) !important;
+}
+
 div[data-testid="stBottomBlockContainer"],
 .st-emotion-cache-hzygls {
     background-color: transparent !important;
@@ -548,3 +551,5 @@ table.dashboard-table td {
 table.dashboard-table tr:hover {
     background-color: rgba(255, 255, 255, 0.02) !important;
 }
+
+
