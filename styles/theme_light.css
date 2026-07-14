@@ -90,7 +90,7 @@ body,
 .stApp,
 [data-testid="stAppViewContainer"],
 .main {
-    background-image: linear-gradient(rgba(241, 245, 249, 0.85), rgba(241, 245, 249, 0.85)), url("/app/static/bg_pattern.png") !important;
+    background-image: linear-gradient(rgba(241, 245, 249, 0.85), rgba(241, 245, 249, 0.85)), url("./app/static/bg_pattern.png") !important;
     background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
