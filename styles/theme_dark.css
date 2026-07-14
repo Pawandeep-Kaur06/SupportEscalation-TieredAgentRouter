@@ -72,7 +72,7 @@ body,
 .stApp, 
 [data-testid="stAppViewContainer"], 
 .main {
-    background-image: linear-gradient(rgba(15, 17, 26, 0.88), rgba(15, 17, 26, 0.88)), url("./app/static/bg_pattern.png") !important;
+    background-image: linear-gradient(rgba(15, 17, 26, 0.88), rgba(15, 17, 26, 0.88)), url("./app/static/bg_dark.png") !important;
     background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
